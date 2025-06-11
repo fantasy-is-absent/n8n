@@ -7,7 +7,7 @@ import { Flags } from '@oclif/core';
 import glob from 'fast-glob';
 import { createReadStream, createWriteStream, existsSync } from 'fs';
 import { mkdir } from 'fs/promises';
-import { jsonParse, randomString, type IWorkflowExecutionDataProcess } from 'n8n-workflow';
+import { jsonParse, type IWorkflowExecutionDataProcess } from 'n8n-workflow';
 import path from 'path';
 import replaceStream from 'replacestream';
 import { pipeline } from 'stream/promises';
@@ -289,25 +289,6 @@ export class Start extends BaseCommand {
 		if (flags.tunnel) {
 			this.log('\nWaiting for tunnel ...');
 
-			let tunnelSubdomain =
-				process.env.N8N_TUNNEL_SUBDOMAIN ?? this.instanceSettings.tunnelSubdomain ?? '';
-
-			if (tunnelSubdomain === '') {
-				// When no tunnel subdomain did exist yet create a new random one
-				tunnelSubdomain = randomString(24).toLowerCase();
-
-				this.instanceSettings.update({ tunnelSubdomain });
-			}
-
-			const { default: localtunnel } = await import('@n8n/localtunnel');
-			const { port } = this.globalConfig;
-
-			const webhookTunnel = await localtunnel(port, {
-				host: 'https://hooks.n8n.cloud',
-				subdomain: tunnelSubdomain,
-			});
-
-			process.env.WEBHOOK_URL = `${webhookTunnel.url}/`;
 			this.log(`Tunnel URL: ${process.env.WEBHOOK_URL}\n`);
 			this.log(
 				'IMPORTANT! Do not share with anybody as it would give people access to your n8n instance!',
